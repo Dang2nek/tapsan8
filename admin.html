@@ -97,7 +97,7 @@ if (!configured) {
   $('lgo').onclick = async () => {
     $('lmsg').textContent = '';
     try { await signInWithEmailAndPassword(auth, ADMIN_EMAIL, $('pw').value); }
-    catch (e) { $('lmsg').textContent = (e.code==='auth/invalid-credential'||e.code==='auth/wrong-password'?'Sai mật khẩu':'Đăng nhập không được: '+e.code); }
+    catch (e) { $('lmsg').textContent = 'Không đăng nhập được (' + e.code + '). Trang đang thử với email: ' + ADMIN_EMAIL; }
   };
   $('pw').onkeydown = e => { if (e.key === 'Enter') $('lgo').click(); };
   $('savebtn').onclick = () => { clearTimeout(timer); save(); };
