@@ -5,8 +5,9 @@ body{background:radial-gradient(ellipse at 50% 30%,var(--stage2),var(--stage));c
 h1.top{font:600 clamp(1.4rem,3vw,2rem)/1.2 var(--fh);margin:22px 12px 4px;text-align:center;color:var(--gold)}
 p.tip{margin:0 12px 10px;font-size:.85rem;opacity:.7;text-align:center}
 .stage{perspective:2200px;padding:20px 0 30px;width:100%;display:flex;justify-content:center}
-.book{position:relative;width:calc(var(--pw)*2);height:calc(var(--pw)*1.4);transition:transform .9s cubic-bezier(.5,0,.2,1);transform-style:preserve-3d;transform:translateX(calc(var(--pw)/-2));filter:drop-shadow(0 30px 30px #0008);touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.book{position:relative;width:calc(var(--pw)*2);height:calc(var(--pw)*1.4);transition:transform .9s cubic-bezier(.5,0,.2,1);transform-style:preserve-3d;transform:translateX(calc(var(--pw)/-2));touch-action:pan-y;user-select:none;-webkit-user-select:none}
 body.editing .book{user-select:auto;-webkit-user-select:auto}
+.book::after{content:'';position:absolute;left:2%;right:2%;bottom:-26px;height:34px;background:radial-gradient(ellipse at center,#000a,transparent 70%);filter:blur(6px);transform:translateZ(-2px);pointer-events:none}
 .book.end{transform:translateX(calc(var(--pw)/2))}.book.mid{transform:none}
 .sheet{position:absolute;left:50%;top:0;width:50%;height:100%;transform-origin:left center;transform-style:preserve-3d;transition:transform 1s cubic-bezier(.6,0,.25,1)}
 .sheet.flipped{transform:rotateY(-180deg)}
@@ -77,4 +78,9 @@ input[type=range]{vertical-align:middle;width:90px}
 .card button{border:0;border-radius:2em;padding:.55em 1.2em;font:600 .9rem var(--fb);cursor:pointer;background:var(--accent);color:#fff}
 .card button.g{background:#0002;color:#2b2118}
 #toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#000d;color:#fff;padding:.6em 1.2em;border-radius:2em;font-size:.9rem;z-index:1000;display:none}
-@media (prefers-reduced-motion:reduce){.sheet,.book{transition-duration:.01s}.item{animation:none!important;opacity:1!important}}
+@media (prefers-reduced-motion:reduce){.item[data-a=float],.item[data-a=pulse],.item[data-a=sway]{animation:fade .6s both!important}}
+
+.face::after{content:'';position:absolute;inset:0;pointer-events:none;opacity:0;background:linear-gradient(90deg,#000a,#0000 60%)}
+.face.back::after{background:linear-gradient(270deg,#000a,#0000 60%)}
+.sheet.turning .face::after{animation:shade 1s ease-in-out}
+@keyframes shade{0%{opacity:0}50%{opacity:.55}100%{opacity:0}}

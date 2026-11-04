@@ -55,7 +55,7 @@ export function initBook({ data, editable = false, onChange = () => {}, upload =
   const vis = () => cur === 0 ? [0] : cur === N ? [2 * N - 1] : [2 * cur - 1, 2 * cur];
   function playVis() { const v = vis(); faces.forEach((f, p) => f.querySelectorAll('.item').forEach(d => { if (v.includes(p)) setTimeout(() => d.classList.add('play'), 30); else d.classList.remove('play') })) }
   function update() {
-    sheets.forEach((s, i) => { const fl = i < cur; if (fl !== s.classList.contains('flipped')) { s.classList.toggle('flipped', fl); s.style.zIndex = 100; setTimeout(() => { s.style.zIndex = fl ? i + 1 : N - i }, 520) } });
+    sheets.forEach((s, i) => { const fl = i < cur; if (fl !== s.classList.contains('flipped')) { s.classList.toggle('flipped', fl); s.style.zIndex = 100; s.classList.add('turning'); setTimeout(() => s.classList.remove('turning'), 1050); setTimeout(() => { s.style.zIndex = fl ? i + 1 : N - i }, 520) } });
     book.className = 'book' + (cur === 0 ? '' : cur === N ? ' end' : ' mid');
     $('ind').textContent = cur === 0 ? 'Bìa' : cur === N ? 'Bìa sau' : `Trang ${2 * cur - 1}–${2 * cur}`; playVis();
   }
