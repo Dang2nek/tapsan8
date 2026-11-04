@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quản trị tập san 20/11</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=Dancing+Script:wght@600&family=Playfair+Display:wght@600;800&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<h1 class="top">Quản trị tập san</h1>
+<p class="tip" id="etip">Bấm vào một khối để chọn · kéo ✥ để di chuyển (ảnh kéo trực tiếp) · kéo ◢ để đổi kích thước · gõ chữ trực tiếp · tự động lưu lên Firebase</p>
+<div class="stage"><div class="book" id="book"></div></div>
+<div class="bar"><button id="prev">‹ Trước</button><span id="ind"></span><button id="next">Sau ›</button><button id="edt">👁 Xem thử</button><button id="savebtn">💾 Lưu ngay</button><span id="status"></span><button id="logout">Đăng xuất</button></div>
+<div class="bar tools">
+  <button id="addt">＋ Chữ</button>
+  <label class="btn">＋ Ảnh<input type="file" id="addi" accept="image/*" hidden></label>
+  <button id="addp">＋ Thêm trang</button>
+  <button id="delp">🗑 Xoá tờ</button>
+  <label class="btn">Màu chủ đạo<input type="color" id="col" value="#b3262e"></label>
+  <select id="fnt"><option value="'Playfair Display',Georgia,serif">Tiêu đề: Playfair</option><option value="'Dancing Script',cursive">Tiêu đề: Dancing Script</option><option value="'Be Vietnam Pro',sans-serif">Tiêu đề: Be Vietnam Pro</option></select>
+  <button id="rst">Dùng lại bản mẫu</button>
+</div>
+<div class="bar" id="sel">
+  <select id="sk"><option value="h">Tiêu đề</option><option value="h3">Tiêu đề nhỏ</option><option value="p">Đoạn văn</option><option value="s">Chữ viết tay</option><option value="poem">Thơ</option><option value="joke">Khung vui</option><option value="q">Trích dẫn</option><option value="big">Số lớn</option></select>
+  <select id="sa"><option value="none">Không hiệu ứng</option><option value="fade">Hiện mờ</option><option value="up">Trượt lên</option><option value="left">Lướt từ trái</option><option value="right">Lướt từ phải</option><option value="zoom">Phóng to</option><option value="bounce">Nảy xuống</option><option value="float">Lơ lửng</option><option value="pulse">Đập nhẹ</option><option value="sway">Đung đưa</option></select>
+  <button id="sm">A−</button><button id="sp">A＋</button>
+  <label class="btn" id="scl">Màu chữ<input type="color" id="sc" value="#2b2118"></label>
+  <label class="btn">Xoay<input type="range" id="sr" min="-30" max="30" value="0"></label>
+  <button id="spy">▶ Xem hiệu ứng</button><button id="ssrc">Ảnh &amp; nguồn</button><button id="sdel">🗑 Xoá</button>
+</div>
+
+<div class="modal" id="lb"><div class="card"><img id="lbi" alt=""><p class="src" id="lbs"></p><div class="row"><button class="g" data-close>Đóng</button></div></div></div>
+<div class="modal" id="ed"><div class="card">
+  <h3 style="margin:0">Đổi ảnh &amp; nguồn</h3>
+  <label>Chọn ảnh khác từ máy (bỏ trống nếu giữ ảnh cũ)</label><input type="file" id="edf" accept="image/*">
+  <label>Nguồn ảnh (tác giả, trang web, “ảnh lớp tự chụp”…)</label><input type="text" id="edc" placeholder="Ví dụ: Ảnh do bạn Lan chụp, lớp 12A1">
+  <label>Đường dẫn nguồn (nếu có)</label><input type="url" id="edu" placeholder="https://...">
+  <div class="row"><button class="g" data-close>Huỷ</button><button id="eds">Lưu</button></div>
+</div></div>
+<div class="modal on" id="login"><div class="card">
+  <h3 style="margin:0">Đăng nhập quản trị</h3>
+  <p id="lmsg" style="font-size:.85rem;margin:.4em 0"></p>
+  <label>Email</label><input type="email" id="em" autocomplete="username">
+  <label>Mật khẩu</label><input type="password" id="pw" autocomplete="current-password">
+  <div class="row"><button id="lgo">Đăng nhập</button></div>
+</div></div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';
+import { firebaseConfig, configured } from './firebase-config.js';
+import { initBook, defaultData } from './book.js';
+
+const $ = id => document.getElementById(id);
+let api = null, timer = null;
+
+function start(data, save, upload) {
+  if (api) return;
+  $('login').classList.remove('on');
+  api = initBook({ data, editable: true, onChange: save, upload });
+}
+
+if (!configured) {
+  // Chế độ thử: chưa có Firebase, mọi thay đổi chỉ nằm trong bộ nhớ, ảnh không được lưu lâu dài
+  $('login').classList.remove('on');
+  $('status').textContent = 'Chế độ thử (chưa nối Firebase)';
+  $('logout').style.display = 'none'; $('savebtn').style.display = 'none';
+  start(defaultData(), () => {}, null);
+} else {
+  const app = initializeApp(firebaseConfig), auth = getAuth(app), db = getFirestore(app), storage = getStorage(app);
+  const docRef = doc(db, 'tapsan', 'main');
+  async function save() {
+    $('status').textContent = 'Đang lưu…';
+    try {
+      const clean = JSON.parse(JSON.stringify(api.getData()));
+      await setDoc(docRef, { ...clean, updated: serverTimestamp() });
+      $('status').textContent = 'Đã lưu ✓';
+    } catch (e) { $('status').textContent = 'Lưu lỗi: ' + e.code; console.error(e); }
+  }
+  const queue = () => { $('status').textContent = 'Có thay đổi…'; clearTimeout(timer); timer = setTimeout(save, 1200); };
+  const upload = async blob => {
+    const r = ref(storage, 'tapsan/' + Date.now() + '-' + Math.random().toString(36).slice(2, 7) + '.jpg');
+    await uploadBytes(r, blob, { contentType: 'image/jpeg' });
+    return getDownloadURL(r);
+  };
+  onAuthStateChanged(auth, async user => {
+    if (!user) { $('login').classList.add('on'); return; }
+    let data = null;
+    try { const s = await getDoc(docRef); if (s.exists()) data = s.data(); } catch (e) { console.error(e); }
+    start(data && data.pages ? data : defaultData(), queue, upload);
+  });
+  $('lgo').onclick = async () => {
+    $('lmsg').textContent = '';
+    try { await signInWithEmailAndPassword(auth, $('em').value.trim(), $('pw').value); }
+    catch (e) { $('lmsg').textContent = 'Đăng nhập không được: ' + e.code; }
+  };
+  $('pw').onkeydown = e => { if (e.key === 'Enter') $('lgo').click(); };
+  $('savebtn').onclick = () => { clearTimeout(timer); save(); };
+  $('logout').onclick = () => signOut(auth).then(() => location.reload());
+}
+</script>
+</body>
+</html>

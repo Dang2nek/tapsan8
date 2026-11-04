@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tập san 20/11 – Tri ân thầy cô</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=Dancing+Script:wght@600&family=Playfair+Display:wght@600;800&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<h1 class="top">Tập san 20/11 · Tri ân thầy cô</h1>
+<p class="tip">Lướt (kéo) trang để lật · phím ← → · bấm vào ảnh để xem nguồn · điện thoại nên xoay ngang</p>
+<div class="stage"><div class="book" id="book"></div></div>
+<div class="bar"><button id="prev">‹ Trước</button><span id="ind"></span><button id="next">Sau ›</button></div>
+<p class="tip" id="note" style="display:none"></p>
+
+<div class="modal" id="lb"><div class="card"><img id="lbi" alt=""><p class="src" id="lbs"></p><div class="row"><button class="g" data-close>Đóng</button></div></div></div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { firebaseConfig, configured } from './firebase-config.js';
+import { initBook, defaultData } from './book.js';
+
+let data = null;
+if (configured) {
+  try {
+    const db = getFirestore(initializeApp(firebaseConfig));
+    const snap = await getDoc(doc(db, 'tapsan', 'main'));
+    if (snap.exists()) data = snap.data();
+  } catch (e) { console.error(e); }
+}
+if (!data || !data.pages) {
+  data = defaultData();
+  const n = document.getElementById('note');
+  n.textContent = configured ? 'Chưa có nội dung trên Firebase, đang hiển thị bản mẫu. Hãy mở admin.html để chỉnh sửa và lưu.' : 'Chưa điền firebase-config.js, đang hiển thị bản mẫu.';
+  n.style.display = 'block';
+}
+initBook({ data });
+</script>
+</body>
+</html>
