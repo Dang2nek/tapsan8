@@ -41,8 +41,7 @@
 <div class="modal on" id="login"><div class="card">
   <h3 style="margin:0">Đăng nhập quản trị</h3>
   <p id="lmsg" style="font-size:.85rem;margin:.4em 0"></p>
-  <label>Email</label><input type="email" id="em" autocomplete="username">
-  <label>Mật khẩu</label><input type="password" id="pw" autocomplete="current-password">
+  <label>Mật khẩu</label><input type="password" id="pw" autocomplete="current-password" autofocus>
   <div class="row"><button id="lgo">Đăng nhập</button></div>
 </div></div>
 
@@ -55,6 +54,9 @@ import { firebaseConfig, configured } from './firebase-config.js';
 import { initBook, defaultData } from './book.js';
 
 const $ = id => document.getElementById(id);
+// Email cố định chỉ để Firebase Auth hoạt động; người dùng chỉ cần nhập mật khẩu.
+// Tạo đúng tài khoản này trong Firebase Console → Authentication → Users.
+const ADMIN_EMAIL = 'admin@tapsan.example.com';
 let api = null, timer = null;
 
 function start(data, save, upload) {
@@ -94,8 +96,8 @@ if (!configured) {
   });
   $('lgo').onclick = async () => {
     $('lmsg').textContent = '';
-    try { await signInWithEmailAndPassword(auth, $('em').value.trim(), $('pw').value); }
-    catch (e) { $('lmsg').textContent = 'Đăng nhập không được: ' + e.code; }
+    try { await signInWithEmailAndPassword(auth, ADMIN_EMAIL, $('pw').value); }
+    catch (e) { $('lmsg').textContent = (e.code==='auth/invalid-credential'||e.code==='auth/wrong-password'?'Sai mật khẩu':'Đăng nhập không được: '+e.code); }
   };
   $('pw').onkeydown = e => { if (e.key === 'Enter') $('lgo').click(); };
   $('savebtn').onclick = () => { clearTimeout(timer); save(); };
